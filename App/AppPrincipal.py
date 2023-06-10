@@ -3,6 +3,10 @@ from tkinter import *
 from access.basic_information import names_allowed_leagues
 
 
+def start():
+    AppPrincipal()
+
+
 class AppPrincipal:
 
     def __init__(self):
@@ -19,11 +23,11 @@ class AppPrincipal:
         self.window.resizable(False, False)
         self.window.config(bg='#365949')
 
-        self.img_address = PhotoImage(file='../assets/emblem_xx.png')
+        self.img_address = PhotoImage(file='assets/emblem_xx.png')
 
-        self.menu = Menu(self.window)
+        self.menu = Menu(self.window, bg='black', fg='white')
         self.window.config(menu=self.menu)
-        self.menu.add_command(label='start', command=self.start)
+        self.menu.add_command(label='start', command=self.test, background='black', foreground='white')
 
         self.frame_up = Frame(self.window, height=2, bg='black')
         self.frame_up.pack(fill=X)
@@ -32,11 +36,11 @@ class AppPrincipal:
         self.frame_down = Frame(self.window, height=2, bg='black')
         self.frame_down.pack(fill=X)
 
-        self.label_up = Label(self.frame_up, font='Arial 20', bg='grey', fg='black')
+        self.label_up = Label(self.frame_up, font=("Times", "24", "bold italic"), bg='#3B4641', fg='black')
         self.label_up.config(text='App Soccer Search League')
         self.label_up.pack(fill=X)
-        self.label_down = Label(self.frame_down, font='Arial 20', bg='grey', fg='black')
-        self.label_down.config(text='App Soccer Search League')
+        self.label_down = Label(self.frame_down, font=("'Helvetica", "16", "italic"), bg='#3B4641', fg='black')
+        self.label_down.config(text='Choose the league and find your favorite team...')
         self.label_down.pack(fill=X)
 
         self.sub_frame_left = Frame(self.principal_frame, bg='#162E23')
@@ -57,8 +61,5 @@ class AppPrincipal:
 
         self.window.mainloop()
 
-    def start(self):
+    def test(self):
         pass
-
-
-AppPrincipal()
