@@ -1,8 +1,10 @@
 from tkinter import *
 
 from access.ApiAccess import ApiAccess
-from access.info_about import names_allowed_leagues, api_account_permissions
-from access.menus import competition_menu
+from access.info_api import names_allowed_leagues
+from access.menus import *
+from structure.Competition import Competition
+from structure.Team import Team
 
 
 def start():
@@ -14,7 +16,9 @@ class AppMain:
     def __init__(self):
 
         self.title = 'Soccer Search League'
-        self.img_address = None
+
+        self.competition_open = Competition
+        self.team_open = Team
 
         self.window = Tk()
         self.window.title(self.title)
@@ -26,7 +30,9 @@ class AppMain:
 
         self.menu = Menu(self.window)
         self.window.config(menu=self.menu)
-        self.menu.add_command(label='Menu', command=self.select, background='black', foreground='white')
+        self.menu.add_command(label='file', command=self.select_competition)
+        self.menu.add_command(label='competitions', command=self.open_menu_competitions)
+        self.menu.add_command(label='teams', command=self.open_menu_teams)
 
         self.frame_up = Frame(self.window, height=2, bg='black')
         self.frame_up.pack(fill=X)
@@ -47,11 +53,10 @@ class AppMain:
         self.sub_frame_right = Frame(self.principal_frame, bg='#162E23')
         self.sub_frame_right.grid(row=0, column=1, columnspan=2)
 
-        self.list_options = Listbox(self.sub_frame_left, bg='black', fg='white', height=25, width=50)
-        self.list_options.grid(row=0, column=0)
-
-        for i in names_allowed_leagues:
-            self.list_options.insert(END, i)
+        self.entry_title_list = Entry(self.sub_frame_left, bg='black', fg='white', width=50, bd=5)
+        self.entry_title_list.grid(row=0,column=0)
+        self.list_options = Listbox(self.sub_frame_left, bg='black', fg='white', height=23, width=50, bd=5)
+        self.list_options.grid(row=1, column=0)
 
         self.button_frame = Frame(self.sub_frame_right, bg='#162E23')
         self.button_frame.grid(row=10, column=1)
@@ -60,39 +65,82 @@ class AppMain:
         self.text_information = Text(self.sub_frame_right, bg='black', fg='white', bd=10, height=15, width=50)
         self.text_information.grid(row=21, rowspan=40, column=0, columnspan=100)
 
-        for i in api_account_permissions:
-            self.text_information.insert(END, f"\n {' ' * 5}-  {i.title()}... \n\n")
+        self.button_select = Button(self.button_frame)
+        self.button_return = Button(self.button_frame)
 
-        self.button_select = Button(self.button_frame, text='Select', command=self.select)
-        self.button_select.grid(row=0, column=0)
-        self.button_return = Button(self.button_frame, text='return', command=self.clear_all)
-        self.button_return.grid(row=1, column=0)
+        self.open_menu_competitions()
+        self.configuration('select', self.select_competition)
 
         self.window.mainloop()
 
-    def select(self):
-        option_selected = self.list_options.get(ANCHOR)
-        selected = names_allowed_leagues[option_selected]
-
-        api_access = ApiAccess()
-        competition = api_access.open_resource_info(competition_menu, 'teams', selected)
-
-        print(selected)
+    def open_menu_competitions(self):
+        self.configuration('select', self.select_competition)
 
         self.clear_all()
 
-        for i in competition:
-            if i == 'teams':
-                for j in competition[i]:
-                    self.list_options.insert(END, j['name'])
-                    print(j)
+        for i in names_allowed_leagues:
+            self.list_options.insert(END, i)
 
-            elif i == 'competition':
-                self.text_information.insert(END, competition[i]['name'])
-                self.text_information.insert(END, f"\nTemporada: {competition[i]['id']}\n"
-                                                  f"Emblema: {competition[i]['emblem']}\n"
-                                                  f"Abreviacao: {competition[i]['code']}")
+    def open_menu_teams(self):
+        self.configuration('select', self.select_team)
+
+        team_access = ApiAccess(team_menu)
+        team_all = team_access.open_resource_info()
+
+        self.clear_all()
+
+        for i in team_all['teams']:
+            self.list_options.insert(END, i['name'])
+
+    def select_competition(self):
+        self.configuration('select', self.select_team)
+
+        competition_selected = self.list_options.get(ANCHOR)
+        league_code = names_allowed_leagues[competition_selected]
+
+        competition_access = ApiAccess(competition_menu)
+        page_teams = competition_access.open_resource_info('teams', league_code)
+        self.competition_open = Competition(page_teams, Team)
+
+        self.clear_all()
+
+        all_teams = self.competition_open.teams
+        for i in all_teams:
+            self.list_options.insert(END, i)
+
+        information = self.competition_open.basic_information_pt_br()
+        for i in information:
+            string = '{}: {}'.format(i, information[i])
+            self.text_information.insert(END, f'\n{string}\n')
+
+    def select_team(self):
+        self.configuration("--", None)
+
+        team_selected = self.list_options.get(ANCHOR)
+        self.team_open = self.competition_open.teams[team_selected]
+
+        self.clear_all()
+
+        for i in self.team_open.details:
+            self.text_information.insert(END, f'{i}: {self.team_open.details[i]}\n')
+
+        for i in self.team_open.rh:
+            try:
+                self.list_options.insert(END, f'{i}')
+                print(i)
+                print(self.team_open.rh[i])
+            except KeyError:
+                continue
 
     def clear_all(self):
         self.list_options.delete(0, END)
         self.text_information.delete(1.0, END)
+
+    def configuration(self, text, command):
+        self.button_select.destroy()
+        self.button_return.destroy()
+
+        self.button_select = Button(self.button_frame, text=text, command=command)
+        self.button_select.grid(row=0, column=0)
+        self.button_return = Button(self.button_frame, text='return', command=self.clear_all)
+        self.button_return.grid(row=1, column=0)

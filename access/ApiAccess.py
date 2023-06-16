@@ -24,16 +24,22 @@ def _write_page_address(resources_tuple: tuple, page_search='all', code_id=''):
 
 class ApiAccess:
 
-    def __init__(self):
+    def __init__(self, resource_menu: tuple):
 
-        self.__api_page = 'https://api.football-data.org/v4/'
+        self.__resource_menu = resource_menu
         self.__my_key_token = {'X-Auth-Token': 'f6d47b2ad83145d09dfde55a98a40087'}
 
-    def open_resource_info(self, resource_menu: tuple, page_search: str = None, code_id: str = None):
+        self.__api_page = 'https://api.football-data.org/v4/'
+
+    @property
+    def api_page(self):
+        return self.__api_page
+
+    def open_resource_info(self, page_search: str = None, code_id: str = None):
         if page_search is None and code_id is None:
-            address = _write_page_address(resource_menu)
+            address = _write_page_address(self.__resource_menu)
         else:
-            page_address = _write_page_address(resource_menu, page_search, code_id)
+            page_address = _write_page_address(self.__resource_menu, page_search, code_id)
             address = page_address
 
         dict_to_show = self._make_request(address)
@@ -87,7 +93,3 @@ class ApiAccess:
         captured_dict = json.loads(request.text)
 
         return captured_dict
-
-    @property
-    def api_page(self):
-        return self.__api_page
