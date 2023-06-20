@@ -17,8 +17,8 @@ class AppMain:
 
         self.title = 'Soccer Search League'
 
-        self.competition_open = None
-        self.team_open = None
+        self.competition = None
+        self.team = None
 
         self.window = Tk()
         self.window.title(self.title)
@@ -30,8 +30,13 @@ class AppMain:
 
         self.menu = Menu(self.window)
         self.window.config(menu=self.menu)
-        self.menu.add_command(label='file', command=self.select_competition)
+
+        self.menu_file = Menu(self.menu, tearoff=0)
+        self.menu.add_cascade(label='file', menu=self.menu_file)
+        self.menu_file.add_command(label='New', command=self.initial_setting)
+
         self.menu.add_command(label='competitions', command=self.open_menu_competitions)
+
         self.menu.add_command(label='teams', command=self.open_menu_teams)
 
         self.frame_up = Frame(self.window, height=2, bg='black')
@@ -57,6 +62,10 @@ class AppMain:
         self.entry_title.grid(row=0, column=0)
         self.list_options = Listbox(self.sub_frame_left, bg='black', fg='white', height=22, width=48, bd=10)
         self.list_options.grid(row=1, column=0)
+
+        y_axis = Scrollbar(self.sub_frame_left, orient=VERTICAL, command=self.list_options.yview)
+        y_axis.grid(row=1, rowspan=22, column=1, sticky=N + S)
+        self.list_options.config(yscrollcommand=y_axis.set)
 
         self.butt_frame = Frame(self.sub_frame_right, bg='#162E23')
         self.butt_frame.grid(row=10, column=1)
@@ -84,8 +93,8 @@ class AppMain:
     def open_menu_teams(self):
         self._setting_button_to('team_from_menu')
 
-        team_access = ApiAccess(Team.menu)
-        team_all = team_access.open_resource_info()
+        team_access = ApiAccess(Team.options)
+        team_all = team_access.open_required_dict()
 
         self._clear_all()
 
@@ -94,24 +103,67 @@ class AppMain:
             self.list_options.insert(END, f"{i['id']}- {i['name']}")
 
     def select_competition(self):
-        self._setting_button_to('team')
+        self._setting_button_to('option')
 
         competition_selected = self.list_options.get(ANCHOR)
         league_code = names_allowed_leagues[competition_selected]
 
-        competition_access = ApiAccess(Competition.menu)
-        page_teams = competition_access.open_resource_info('teams', league_code)
-        self.competition_open = Competition(page_teams, Team)
+        competition = Competition(league_code)
+        self.competition = competition
 
         self._clear_all()
-        name = self.competition_open.name
-        self.entry_title.insert(END, name)
 
-        all_teams = self.competition_open.teams
-        for i in all_teams:
+        self.entry_title.insert(END, self.competition.name)
+
+        for i in competition.pages_list:
             self.list_options.insert(END, i)
 
-        basic_info = self.competition_open.basic_information()
+        basic_info = self.competition.basic_information()
+        for i in basic_info:
+            string = '{}: {}'.format(i, basic_info[i])
+            self.text_place.insert(END, f'\n{string}\n')
+
+    def select_option(self):
+
+        selected = self.list_options.get(ANCHOR)
+
+        self._clear_all()
+        self._setting_button_to('team')
+
+        if selected == 'teams':
+            self.entry_title.insert(END, f"{self.competition.name}: (Equipes)")
+
+            self.competition.activate_teams()
+
+            for i in self.competition.teams:
+                self.list_options.insert(END, i)
+
+        elif selected == 'standings':
+            self.entry_title.insert(END, f"{self.competition.name}: (Classificacao)")
+
+            self.competition.activate_standings()
+
+            for i in self.competition.standings:
+                string = '{}- {}'.format(i, self.competition.standings[i])
+                self.list_options.insert(END, string)
+
+        elif selected == 'matches':
+            self.entry_title.insert(END, f"{self.competition.name}: (Rodadas)")
+
+            self.competition.activate_matches()
+
+            for i in self.competition.matches:
+                self.list_options.insert(END, f"{i}a. Rodada")
+
+        elif selected == 'scorers':
+            self.entry_title.insert(END, f"{self.competition.name}: (Estatisticas)")
+
+            self.competition.activate_scorers()
+
+            for i in self.competition.scorers:
+                print(i)
+
+        basic_info = self.competition.basic_information()
         for i in basic_info:
             string = '{}: {}'.format(i, basic_info[i])
             self.text_place.insert(END, f'\n{string}\n')
@@ -122,23 +174,22 @@ class AppMain:
         selected_team = self.list_options.get(ANCHOR)
 
         if from_menu:
-            team_access = ApiAccess(Team.menu)
             code_index = selected_team.index('-')
-            team_dict = team_access.open_resource_info('particular', selected_team[:code_index])
+            team_particular = ApiAccess(Team.options, 'particular', selected_team[:code_index])
 
-            self.team_open = Team(team_dict)
+            self.team = Team(team_particular.open_required_dict())
         else:
-            self.team_open = self.competition_open.teams[selected_team]
+            self.team = self.competition.teams[selected_team]
 
         self._clear_all()
-        name = self.team_open.name
+        name = self.team.name
         self.entry_title.insert(END, name)
 
-        all_data = self.team_open.main_data()
+        all_data = self.team.main_data()
         for i in all_data:
             self.list_options.insert(END, i)
 
-        basic_info = self.team_open.basic_information()
+        basic_info = self.team.basic_information()
         for i in basic_info:
             string = '{}: {}'.format(i, basic_info[i])
             self.text_place.insert(END, f'\n{string}\n')
@@ -171,5 +222,8 @@ class AppMain:
         elif config == 'team_from_menu':
             self.button_select.config(text='select', command=lambda: self.select_team(True))
 
+        elif config == 'option':
+            self.button_select.config(text='select', command=self.select_option)
+
         else:
-            self.button_select.config(text='---', command=None)
+            self.button_select.config(text='select', command=None)

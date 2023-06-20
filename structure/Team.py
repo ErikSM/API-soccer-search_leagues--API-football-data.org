@@ -1,16 +1,13 @@
-
-
 class Team:
-
     pages_list = ['all', 'particular', 'matches']
-    menu = ('teams', pages_list)
+    options = ('teams', pages_list)
 
     def __init__(self, team: dict):
 
-        self.__area = team['area']
-
         self.__code_id = team['id']
         self.__name = team['name']
+
+        self.__area = team['area']
 
         self.details = {
             "nome popular": team['shortName'],
