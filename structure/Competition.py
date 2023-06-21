@@ -27,10 +27,10 @@ class Competition:
         self.matches = None
         self.scorers = None
 
-    def activate_teams(self):
+    def activate_teams(self, team: Team):
         page_search = 'teams'
         option_dict = self._access_internal_option(page_search)
-        self.teams = {i['name']: i
+        self.teams = {i['name']: team(i)
                       for i in option_dict[page_search]}
 
     def activate_standings(self):
@@ -42,7 +42,6 @@ class Competition:
     def activate_matches(self):
         page_search = 'matches'
         option_dict = self._access_internal_option(page_search)
-        print(type(option_dict))
 
         matchday_dict = dict()
         for i in option_dict[page_search]:
@@ -61,7 +60,7 @@ class Competition:
     def activate_scorers(self):
         page_search = 'scorers'
         option_dict = self._access_internal_option(page_search)
-        self.scorers = option_dict[page_search]
+        self.scorers = {i['player']['name']: i for i in option_dict[page_search]}
 
     def _access_internal_option(self, page_search):
         access = ApiAccess(Competition.options, page_search, self.__acronym)

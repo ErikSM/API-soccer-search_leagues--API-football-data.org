@@ -1,10 +1,9 @@
 from tkinter import *
-from access.menus import *
 
 from access.ApiAccess import ApiAccess
 from access.info_api import names_allowed_leagues
 from structure.Competition import Competition
-from structure.Team import Team
+from structure.Team import Team, access_team_dict
 
 
 def start():
@@ -116,7 +115,10 @@ class AppMain:
         self.entry_title.insert(END, self.competition.name)
 
         for i in competition.pages_list:
-            self.list_options.insert(END, i)
+            if i == 'all' or i == 'particular':
+                pass
+            else:
+                self.list_options.insert(END, i)
 
         basic_info = self.competition.basic_information()
         for i in basic_info:
@@ -127,20 +129,21 @@ class AppMain:
 
         selected = self.list_options.get(ANCHOR)
 
-        self._clear_all()
-        self._setting_button_to('team')
-
         if selected == 'teams':
-            self.entry_title.insert(END, f"{self.competition.name}: (Equipes)")
+            self._clear_all()
+            self._setting_button_to('team')
 
-            self.competition.activate_teams()
+            self.entry_title.insert(END, f"{self.competition.name}: (Equipes)")
+            self.competition.activate_teams(Team)
 
             for i in self.competition.teams:
                 self.list_options.insert(END, i)
 
         elif selected == 'standings':
-            self.entry_title.insert(END, f"{self.competition.name}: (Classificacao)")
+            self._clear_all()
+            self._setting_button_to('team')
 
+            self.entry_title.insert(END, f"{self.competition.name}: (Classificacao)")
             self.competition.activate_standings()
 
             for i in self.competition.standings:
@@ -148,20 +151,29 @@ class AppMain:
                 self.list_options.insert(END, string)
 
         elif selected == 'matches':
-            self.entry_title.insert(END, f"{self.competition.name}: (Rodadas)")
+            self._clear_all()
+            self._setting_button_to('---')
 
+            self.entry_title.insert(END, f"{self.competition.name}: (Rodadas)")
             self.competition.activate_matches()
 
             for i in self.competition.matches:
                 self.list_options.insert(END, f"{i}a. Rodada")
 
         elif selected == 'scorers':
-            self.entry_title.insert(END, f"{self.competition.name}: (Estatisticas)")
+            self._clear_all()
+            self._setting_button_to('---')
 
+            self.entry_title.insert(END, f"{self.competition.name}: (Artilharia)")
             self.competition.activate_scorers()
 
             for i in self.competition.scorers:
-                print(i)
+                player = self.competition.scorers[i]['player']['name']
+                goals = self.competition.scorers[i]['goals']
+                self.list_options.insert(1, "{} gols   - {}".format(goals, player))
+
+        else:
+            self.text_place.delete(1.0, END)
 
         basic_info = self.competition.basic_information()
         for i in basic_info:
@@ -175,9 +187,9 @@ class AppMain:
 
         if from_menu:
             code_index = selected_team.index('-')
-            team_particular = ApiAccess(Team.options, 'particular', selected_team[:code_index])
+            team_code = selected_team[:code_index]
 
-            self.team = Team(team_particular.open_required_dict())
+            self.team = Team(team_code, data_is_dict=False)
         else:
             self.team = self.competition.teams[selected_team]
 
