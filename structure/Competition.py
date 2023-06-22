@@ -16,6 +16,7 @@ class Competition:
     all_competitions = ApiAccess(options)
 
     def __init__(self, league_code):
+
         self.__details = access_competition_dict(league_code)
 
         self.__name = self.__details['name']
@@ -71,9 +72,8 @@ class Competition:
     def basic_information(self):
         basic_info = dict()
 
-        basic_info['id'] = self.__details['id']
-        basic_info['sigla'] = self.__details['code']
         basic_info['nome'] = self.__details['name']
+        basic_info['sigla'] = self.__details['code']
         basic_info['temporada atual'] = f"{self.__details['seasons'][0]['startDate']} / " \
                                         f"{self.__details['seasons'][0]['startDate']}"
         basic_info['atualizado em'] = self.__details['lastUpdated']

@@ -1,4 +1,5 @@
 import tkinter as tk
+from datetime import datetime
 from tkinter import ttk
 
 
@@ -19,7 +20,6 @@ class Tabela:
         # sticky=tk.N + tk.S + tk.W + tk.E
         self.treeview = ttk.Treeview(self.window, columns=self.column_names, show='headings')
         self.treeview.grid(row=0, column=0)
-        self.treeview.configure()
 
         # Rolagem
         y_axis = tk.Scrollbar(orient=tk.VERTICAL, command=self.treeview.yview)
@@ -54,3 +54,5 @@ class Tabela:
 
 
 Tabela()
+
+

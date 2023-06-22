@@ -1,4 +1,5 @@
 from access.ApiAccess import ApiAccess
+from structure.Person import Person
 
 
 def access_team_dict(team_code):
@@ -14,35 +15,38 @@ class Team:
 
     all_teams = ApiAccess(options)
 
-    def __init__(self, data_dict_or_data_code, data_is_dict=True):
+    def __init__(self, data_dict_or_data_code):
 
-        if data_is_dict:
-            team = data_dict_or_data_code
-        else:
-            team = access_team_dict(data_dict_or_data_code)
+        self.__details = None
+        if type(data_dict_or_data_code) is dict:
+            self.__details = data_dict_or_data_code
+        elif type(data_dict_or_data_code) is str:
+            self.__details = access_team_dict(data_dict_or_data_code)
 
-        self.__code_id = team['id']
-        self.__name = team['name']
-        self.__area = team['area']
+        self.__code_id = self.__details['id']
+        self.__name = self.__details['name']
+        self.__area = self.__details['area']
 
-        self.details = {
-            "nome popular": team['shortName'],
-            "sigla": team['tla'],
-            "escudo": team['crest'],
-            "endereco": team['address'],
-            "website": team['website'],
-            "fundacao": team['founded'],
-            "cores do clube": team['clubColors'],
-            "estadio": team['venue'],
-            "ultima atualizacao": team['lastUpdated']
+        self.about = {
+            "nome popular": self.__details['shortName'],
+            "sigla": self.__details['tla'],
+            "escudo": self.__details['crest'],
+            "endereco": self.__details['address'],
+            "website": self.__details['website'],
+            "fundacao": self.__details['founded'],
+            "cores do clube": self.__details['clubColors'],
+            "estadio": self.__details['venue'],
+            "ultima atualizacao": self.__details['lastUpdated']
         }
 
-        self.coach = team['coach'],
-        self.squad = team['squad'],
-        self.staff = team['staff'],
+        self.staff = self.__details['staff']
+        self.coach = self.__details['coach']
+
+        self.squad = {i['name']: Person(i)
+                      for i in self.__details['squad']}
 
         self.running_competiitions = {i['name']: i
-                                      for i in team['runningCompetitions']}
+                                      for i in self.__details['runningCompetitions']}
 
         self.matches = None
 
@@ -50,9 +54,9 @@ class Team:
         basic_info = dict()
 
         basic_info['nome'] = self.__name
-        basic_info['estadio'] = self.details['estadio']
+        basic_info['estadio'] = self.about['estadio']
         basic_info['total de competicoes disputadas'] = len(self.running_competiitions)
-        basic_info['ultima atualizacao'] = self.details['ultima atualizacao']
+        basic_info['ultima atualizacao'] = self.about['ultima atualizacao']
 
         return basic_info
 
@@ -63,7 +67,7 @@ class Team:
             'outros membros': self.staff,
             'competicoes': self.running_competiitions,
             'confrontos': self.matches,
-            'detalhes': self.details.copy()
+            'detalhes': self.about.copy()
         }
 
         return other_info
@@ -105,4 +109,4 @@ class Team:
         return self.__name
 
     def get_acronym(self):
-        return self.details['sigla']
+        return self.about['sigla']

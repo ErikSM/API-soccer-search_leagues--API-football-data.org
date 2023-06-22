@@ -2,8 +2,9 @@ from tkinter import *
 
 from access.ApiAccess import ApiAccess
 from access.info_api import names_allowed_leagues
+from access.menus import translator_pt_br
 from structure.Competition import Competition
-from structure.Team import Team, access_team_dict
+from structure.Team import Team
 
 
 def start():
@@ -21,7 +22,7 @@ class AppMain:
 
         self.window = Tk()
         self.window.title(self.title)
-        self.window.geometry("700x500+400+100")
+        self.window.geometry("800x500+400+100")
         self.window.resizable(False, False)
         self.window.config(bg='#365949')
 
@@ -58,12 +59,12 @@ class AppMain:
         self.sub_frame_right.grid(row=0, column=1, columnspan=2)
 
         self.entry_title = Entry(self.sub_frame_left, bg='black', fg='white', width=48, bd=10)
-        self.entry_title.grid(row=0, column=0)
+        self.entry_title.grid(row=0, column=1)
         self.list_options = Listbox(self.sub_frame_left, bg='black', fg='white', height=22, width=48, bd=10)
-        self.list_options.grid(row=1, column=0)
+        self.list_options.grid(row=1, column=1)
 
         y_axis = Scrollbar(self.sub_frame_left, orient=VERTICAL, command=self.list_options.yview)
-        y_axis.grid(row=1, rowspan=22, column=1, sticky=N + S)
+        y_axis.grid(row=1, rowspan=22, column=0, sticky=N + S)
         self.list_options.config(yscrollcommand=y_axis.set)
 
         self.butt_frame = Frame(self.sub_frame_right, bg='#162E23')
@@ -81,7 +82,7 @@ class AppMain:
         self.window.mainloop()
 
     def open_menu_competitions(self):
-        self._setting_button_to('competition')
+        self._setting_button_to(self.select_competition)
 
         self._clear_all()
 
@@ -90,7 +91,7 @@ class AppMain:
             self.list_options.insert(END, i)
 
     def open_menu_teams(self):
-        self._setting_button_to('team_from_menu')
+        self._setting_button_to(lambda: self.select_team(True))
 
         team_access = ApiAccess(Team.options)
         team_all = team_access.open_required_dict()
@@ -102,7 +103,7 @@ class AppMain:
             self.list_options.insert(END, f"{i['id']}- {i['name']}")
 
     def select_competition(self):
-        self._setting_button_to('option')
+        self._setting_button_to(self.select_competition_option)
 
         competition_selected = self.list_options.get(ANCHOR)
         league_code = names_allowed_leagues[competition_selected]
@@ -118,20 +119,20 @@ class AppMain:
             if i == 'all' or i == 'particular':
                 pass
             else:
-                self.list_options.insert(END, i)
+                self.list_options.insert(END, translator_pt_br(i))
 
         basic_info = self.competition.basic_information()
         for i in basic_info:
             string = '{}: {}'.format(i, basic_info[i])
             self.text_place.insert(END, f'\n{string}\n')
 
-    def select_option(self):
+    def select_competition_option(self):
 
         selected = self.list_options.get(ANCHOR)
 
-        if selected == 'teams':
+        if selected == 'equipes':
             self._clear_all()
-            self._setting_button_to('team')
+            self._setting_button_to(self.select_team)
 
             self.entry_title.insert(END, f"{self.competition.name}: (Equipes)")
             self.competition.activate_teams(Team)
@@ -139,9 +140,9 @@ class AppMain:
             for i in self.competition.teams:
                 self.list_options.insert(END, i)
 
-        elif selected == 'standings':
+        elif selected == 'classificacao':
             self._clear_all()
-            self._setting_button_to('team')
+            self._setting_button_to(self.select_team)
 
             self.entry_title.insert(END, f"{self.competition.name}: (Classificacao)")
             self.competition.activate_standings()
@@ -150,9 +151,9 @@ class AppMain:
                 string = '{}- {}'.format(i, self.competition.standings[i])
                 self.list_options.insert(END, string)
 
-        elif selected == 'matches':
+        elif selected == 'confrontos':
             self._clear_all()
-            self._setting_button_to('---')
+            self._setting_button_to(None)
 
             self.entry_title.insert(END, f"{self.competition.name}: (Rodadas)")
             self.competition.activate_matches()
@@ -160,17 +161,18 @@ class AppMain:
             for i in self.competition.matches:
                 self.list_options.insert(END, f"{i}a. Rodada")
 
-        elif selected == 'scorers':
+        elif selected == 'artilharia':
             self._clear_all()
-            self._setting_button_to('---')
+            self._setting_button_to(None)
 
             self.entry_title.insert(END, f"{self.competition.name}: (Artilharia)")
             self.competition.activate_scorers()
 
             for i in self.competition.scorers:
+                code_id = self.competition.scorers[i]['player']['id']
                 player = self.competition.scorers[i]['player']['name']
                 goals = self.competition.scorers[i]['goals']
-                self.list_options.insert(1, "{} gols   - {}".format(goals, player))
+                self.list_options.insert(1, "({}) {}:     {} gols".format(code_id, player, goals))
 
         else:
             self.text_place.delete(1.0, END)
@@ -181,30 +183,53 @@ class AppMain:
             self.text_place.insert(END, f'\n{string}\n')
 
     def select_team(self, from_menu=False):
-        self._setting_button_to('xxx')
 
         selected_team = self.list_options.get(ANCHOR)
 
-        if from_menu:
-            code_index = selected_team.index('-')
-            team_code = selected_team[:code_index]
+        try:
+            if from_menu:
+                code_index = selected_team.index('-')
+                team_code = selected_team[:code_index]
 
-            self.team = Team(team_code, data_is_dict=False)
+                self.team = Team(team_code)
+            else:
+                self.team = self.competition.teams[selected_team]
+
+            self._clear_all()
+            self.entry_title.insert(END, self.team.name)
+
+            all_data = self.team.main_data()
+            for i in all_data:
+                self.list_options.insert(END, i)
+
+            basic_info = self.team.basic_information()
+            for i in basic_info:
+                string = '{}: {}'.format(i, basic_info[i])
+                self.text_place.insert(END, f'\n{string}\n')
+        except Exception as ex:
+            self._error_messege(ex)
         else:
-            self.team = self.competition.teams[selected_team]
+            self._setting_button_to(self.select_team_option)
 
-        self._clear_all()
-        name = self.team.name
-        self.entry_title.insert(END, name)
+    def select_team_option(self):
 
-        all_data = self.team.main_data()
-        for i in all_data:
-            self.list_options.insert(END, i)
+        selected = self.list_options.get(ANCHOR)
 
-        basic_info = self.team.basic_information()
-        for i in basic_info:
-            string = '{}: {}'.format(i, basic_info[i])
-            self.text_place.insert(END, f'\n{string}\n')
+        if selected == 'jogadores':
+            self._clear_all()
+            self._setting_button_to(None)
+
+            self.entry_title.insert(END, f"{self.team.name}: (Jogadores)")
+
+            all_players = self.team.squad
+            for i in all_players:
+                self.list_options.insert(1, i)
+
+            basic_info = self.team.basic_information()
+            for i in basic_info:
+                string = '{}: {}'.format(i, basic_info[i])
+                self.text_place.insert(END, f'\n{string}\n')
+
 
     def initial_setting(self):
         self.open_menu_competitions()
@@ -214,28 +239,19 @@ class AppMain:
         self.list_options.delete(0, END)
         self.text_place.delete(1.0, END)
 
-    def _setting_button_to(self, config):
+    def _setting_button_to(self, command):
         self.button_select.destroy()
         self.button_return.destroy()
 
         self.button_select = Button(self.butt_frame, bg='#3B4641', fg='white', bd=1, width=5)
         self.button_select.grid(row=0, column=0)
 
+        self.button_select.config(text='select', command=command)
+
         self.button_return = Button(self.butt_frame, bg='#3B4641', fg='white', bd=1, width=5)
         self.button_return.grid(row=1, column=0)
         self.button_return.config(text='return', command=self.initial_setting)
 
-        if config == 'competition':
-            self.button_select.config(text='select', command=self.select_competition)
-
-        elif config == 'team':
-            self.button_select.config(text='select', command=self.select_team)
-
-        elif config == 'team_from_menu':
-            self.button_select.config(text='select', command=lambda: self.select_team(True))
-
-        elif config == 'option':
-            self.button_select.config(text='select', command=self.select_option)
-
-        else:
-            self.button_select.config(text='select', command=None)
+    def _error_messege(self, error):
+        self.text_place.delete(1.0, END)
+        self.text_place.insert(END, f"Error: {error}")
