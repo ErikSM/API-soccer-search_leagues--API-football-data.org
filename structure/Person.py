@@ -27,13 +27,31 @@ class Person:
         self.__birthday = self.__details['dateOfBirth']
         self.__nationality = self.__details['nationality']
 
-    @property
-    def name(self):
-        return self.__name
+        self.matches = None
 
-    @property
-    def code_id(self):
-        return self.__code_id
+    def activate_matches(self):
+        page_search = 'matches'
+        option_dict = self._access_internal_option(page_search)
+
+        matchday_dict = dict()
+        for i in option_dict[page_search]:
+            for j in i:
+                if j == 'matchday':
+                    matchday_dict[i[j]] = list()
+
+        for i in option_dict[page_search]:
+            for j in matchday_dict:
+                if j == i['matchday']:
+                    match = {i['id']: i}
+                    matchday_dict[j].append(match)
+
+        self.matches = matchday_dict
+
+    def _access_internal_option(self, page_search):
+        access = ApiAccess(Person.options, page_search, self.__code_id)
+        accessed_dict = access.open_required_dict()
+
+        return accessed_dict
 
     def basic_information(self):
         basic_info = dict()
@@ -43,3 +61,16 @@ class Person:
         basic_info['nacionalidade'] = self.__details['nationality']
 
         return basic_info
+
+    def get_details(self):
+        details_copy = self.__details.copy()
+
+        return details_copy
+
+    @property
+    def name(self):
+        return self.__name
+
+    @property
+    def code_id(self):
+        return self.__code_id

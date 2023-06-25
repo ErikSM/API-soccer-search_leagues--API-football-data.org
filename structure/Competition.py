@@ -1,5 +1,6 @@
 from access.ApiAccess import ApiAccess
 from structure import Team
+from structure.Match import Match
 
 
 def access_competition_dict(league_code):
@@ -19,9 +20,10 @@ class Competition:
 
         self.__details = access_competition_dict(league_code)
 
-        self.__name = self.__details['name']
         self.__code_id = self.__details['id']
+        self.__name = self.__details['name']
         self.__acronym = self.__details['code']
+        self.__type = self.__details['type']
 
         self.teams = None
         self.standings = None
@@ -31,12 +33,14 @@ class Competition:
     def activate_teams(self, team: Team):
         page_search = 'teams'
         option_dict = self._access_internal_option(page_search)
+
         self.teams = {i['name']: team(i)
                       for i in option_dict[page_search]}
 
     def activate_standings(self):
         page_search = 'standings'
         option_dict = self._access_internal_option(page_search)
+
         self.standings = {i['position']: i['team']['name']
                           for i in option_dict[page_search][0]['table']}
 
@@ -48,19 +52,20 @@ class Competition:
         for i in option_dict[page_search]:
             for j in i:
                 if j == 'matchday':
-                    matchday_dict[i[j]] = list()
+                    matchday_dict[f"{i[j]}a Rodada"] = None
 
         for i in option_dict[page_search]:
             for j in matchday_dict:
-                if j == i['matchday']:
-                    match = {i['id']: i}
-                    matchday_dict[j].append(match)
+                if j == f"{i['matchday']}a Rodada":
+                    match = {i['id']: Match(i)}
+                    matchday_dict[j] = match
 
         self.matches = matchday_dict
 
     def activate_scorers(self):
         page_search = 'scorers'
         option_dict = self._access_internal_option(page_search)
+
         self.scorers = {i['player']['name']: i for i in option_dict[page_search]}
 
     def _access_internal_option(self, page_search):
@@ -80,6 +85,11 @@ class Competition:
 
         return basic_info
 
+    def get_details(self):
+        details_copy = self.__details.copy()
+
+        return details_copy
+
     @property
     def name(self):
         return self.__name
@@ -89,5 +99,5 @@ class Competition:
         return self.__code_id
 
     @property
-    def details(self):
-        return self.__details
+    def type(self):
+        return self.__type

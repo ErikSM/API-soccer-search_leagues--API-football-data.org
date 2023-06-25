@@ -1,3 +1,3 @@
-from apps.AppMain import start
+from apps.Start import start
 
 start()

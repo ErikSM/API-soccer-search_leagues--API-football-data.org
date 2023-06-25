@@ -1,4 +1,5 @@
 from access.ApiAccess import ApiAccess
+from structure.Match import Match
 from structure.Person import Person
 
 
@@ -39,38 +40,16 @@ class Team:
             "ultima atualizacao": self.__details['lastUpdated']
         }
 
-        self.staff = self.__details['staff']
         self.coach = self.__details['coach']
+        self.staff = self.__details['staff']
 
         self.squad = {i['name']: Person(i)
                       for i in self.__details['squad']}
 
-        self.running_competiitions = {i['name']: i
-                                      for i in self.__details['runningCompetitions']}
+        self.competiitions = {i['name']: i
+                              for i in self.__details['runningCompetitions']}
 
         self.matches = None
-
-    def basic_information(self):
-        basic_info = dict()
-
-        basic_info['nome'] = self.__name
-        basic_info['estadio'] = self.about['estadio']
-        basic_info['total de competicoes disputadas'] = len(self.running_competiitions)
-        basic_info['ultima atualizacao'] = self.about['ultima atualizacao']
-
-        return basic_info
-
-    def main_data(self):
-        other_info = {
-            'tecnico': self.coach,
-            'jogadores': self.squad,
-            'outros membros': self.staff,
-            'competicoes': self.running_competiitions,
-            'confrontos': self.matches,
-            'detalhes': self.about.copy()
-        }
-
-        return other_info
 
     def activate_matches(self):
         page_search = 'matches'
@@ -80,21 +59,51 @@ class Team:
         for i in option_dict[page_search]:
             for j in i:
                 if j == 'matchday':
-                    matchday_dict[i[j]] = list()
+                    matchday_dict[f"{i[j]}a Rodada"] = None
 
         for i in option_dict[page_search]:
             for j in matchday_dict:
-                if j == i['matchday']:
-                    match = {i['id']: i}
-                    matchday_dict[j].append(match)
+                if j == f"{i['matchday']}a Rodada":
+                    match = {i['id']: Match(i)}
+                    matchday_dict[j] = match
 
         self.matches = matchday_dict
+        print(self.matches)
 
     def _access_internal_option(self, page_search):
         access = ApiAccess(Team.options, page_search, self.__code_id)
         accessed_dict = access.open_required_dict()
 
         return accessed_dict
+
+    def basic_information(self):
+        basic_info = {
+            'nome': self.__name,
+            'tecnico': self.coach,
+            'estadio': self.about['estadio'],
+            'Total de competicoes': len(self.competiitions),
+            'ultima atualizacao': self.about['ultima atualizacao']
+        }
+
+        return basic_info
+
+    def main_data(self):
+        main_data = {
+            'jogadores': self.squad,
+            'competicoes': self.competiitions,
+            'confrontos': self.matches,
+            'sobre o clube': self.about.copy()
+        }
+
+        return main_data
+
+    def get_acronym(self):
+        return self.about['sigla']
+
+    def get_details(self):
+        details_copy = self.__details.copy
+
+        return details_copy
 
     @property
     def area(self):
@@ -107,6 +116,3 @@ class Team:
     @property
     def name(self):
         return self.__name
-
-    def get_acronym(self):
-        return self.about['sigla']
