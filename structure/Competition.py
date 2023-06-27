@@ -40,9 +40,29 @@ class Competition:
     def activate_standings(self):
         page_search = 'standings'
         option_dict = self._access_internal_option(page_search)
+        try:
+            option_dict[page_search]
+        except Exception as ex:
+            self.standings = {'Inexistente': ('Error', f'Nao encontrado{ex}')}
+        else:
 
-        self.standings = {i['position']: i['team']['name']
-                          for i in option_dict[page_search][0]['table']}
+            if len(option_dict[page_search]) > 1:
+                self.standings = dict()
+
+                for i in option_dict[page_search]:
+                    group_standings = []
+
+                    table = i['table']
+                    for j in table:
+                        group_standings.append((j['position'], j['team']['name']))
+                    group_name = (i['group'])
+
+                    self.standings[group_name] = group_standings
+
+            elif len(option_dict[page_search]) == 1:
+                self.standings = {i['position']: i['team']['name']
+                                  for i in option_dict[page_search][0]['table']}
+
 
     def activate_matches(self):
         page_search = 'matches'
@@ -77,7 +97,7 @@ class Competition:
     def basic_information(self):
         basic_info = dict()
 
-        basic_info['nome'] = self.__details['name']
+        basic_info['competicao'] = self.__details['name']
         basic_info['sigla'] = self.__details['code']
         basic_info['temporada atual'] = f"{self.__details['seasons'][0]['startDate']} / " \
                                         f"{self.__details['seasons'][0]['startDate']}"

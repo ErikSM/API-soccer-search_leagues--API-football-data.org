@@ -55,10 +55,20 @@ def select_competition_option(self: AppMain):
         self.entry_title.insert(END, f"{self.competition.name}: (Classificacao)")
 
         self.competition.activate_standings()
+
         standings = self.competition.standings
-        for i in standings:
-            string = '{}- {}'.format(i, standings[i])
-            self.list_options.insert(END, string)
+
+        if self.competition.type == 'CUP':
+            for i in standings:
+                self.list_options.insert(END, i)
+                for j in standings[i]:
+                    string = '{}- {}'.format(j[0], j[1])
+                    self.list_options.insert(END, string)
+                self.list_options.insert(END, '')
+        else:
+            for i in standings:
+                string = '{}- {}'.format(i, standings[i])
+                self.list_options.insert(END, string)
 
     elif selected == 'confrontos':
         self.clear_all()
@@ -66,10 +76,13 @@ def select_competition_option(self: AppMain):
 
         self.entry_title.insert(END, f"{self.competition.name}: (Rodadas)")
 
-        self.competition.activate_matches()
-        all_matches = self.competition.matches
-        for i in all_matches:
-            self.list_options.insert(END, f"{i}")
+        try:
+            self.competition.activate_matches()
+            all_matches = self.competition.matches
+            for i in all_matches:
+                self.list_options.insert(END, f"{i}")
+        except Exception as ex:
+            self.list_options.insert(END, f"Error {ex}")
 
     elif selected == 'artilharia':
         self.clear_all()
