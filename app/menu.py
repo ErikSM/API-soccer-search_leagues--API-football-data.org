@@ -1,6 +1,7 @@
-from tkinter import Menu
+from tkinter import Menu, END
 
 from access.ApiAccess import ApiAccess
+from access.info_api import names_allowed_leagues
 from app.AppMain import AppMain
 from app.competition import select_competition
 from app.team import select_team
@@ -23,7 +24,11 @@ def create_menu(self: AppMain):
 def open_menu_competitions(self: AppMain):
     self.setting_button_to(lambda: select_competition(self))
 
-    self.print_competitions_allowed()
+    self.clear_all()
+
+    self.entry_title.insert(END, 'Todas as competicoes:')
+    for i in names_allowed_leagues:
+        self.list_options.insert(END, i)
 
 
 def open_menu_teams(self: AppMain):
@@ -32,4 +37,8 @@ def open_menu_teams(self: AppMain):
     team_access = ApiAccess(Team.options)
     team_all = team_access.open_required_dict()
 
-    self.print_teams_allowed(team_all)
+    self.clear_all()
+
+    self.entry_title.insert(END, 'Todos os times:')
+    for i in team_all['teams']:
+        self.list_options.insert(END, f"{i['id']}- {i['name']}")

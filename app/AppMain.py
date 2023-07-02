@@ -1,7 +1,5 @@
 from tkinter import *
 
-from access.info_api import names_allowed_leagues
-
 
 class AppMain:
 
@@ -76,18 +74,6 @@ class AppMain:
 
         self.clear_all()
         self.entry_title.insert(END, self.person.name)
-
-    def print_teams_allowed(self, team_all: dict):
-        self.clear_all()
-        self.entry_title.insert(END, 'Todos os times:')
-        for i in team_all['teams']:
-            self.list_options.insert(END, f"{i['id']}- {i['name']}")
-
-    def print_competitions_allowed(self):
-        self.clear_all()
-        self.entry_title.insert(END, 'Todas as competicoes:')
-        for i in names_allowed_leagues:
-            self.list_options.insert(END, i)
 
     def clear_all(self):
         self.entry_title.delete(0, END)
