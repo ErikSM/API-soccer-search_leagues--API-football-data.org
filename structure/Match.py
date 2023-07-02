@@ -51,13 +51,15 @@ class Match:
                                              home, away,
                                              self.__details['awayTeam']['tla'])
 
-        print(self.resume)
-
     def basic_information(self):
         basic_info = {
             'competicao': self.about['competition']['name'],
+            'temporada': self.about['season']['startDate'][:4],
             'rodada': self.__matchday,
-            'Confronto': "{}x{}".format(self.__home_team['name'], self.__away_team['name'])
+            'placar': self.resume,
+            'anfitriao': self.__details['homeTeam']['name'],
+            'visitante': self.__details['homeTeam']['name'],
+
         }
 
         return basic_info

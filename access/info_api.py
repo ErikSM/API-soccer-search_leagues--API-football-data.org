@@ -1,18 +1,14 @@
 import json
 import requests
 
-
 documentation_source_page_address = "https://www.football-data.org/documentation/quickstart"
 
-
 collections_source_address = 'https://www.postman.com/collections/f3449621c47b66b53725'
-
 
 api_account_permissions = ['12 competitions',
                            'Scores delayed',
                            'Fixtures, Schedules',
                            'League Tables']
-
 
 acronyms_allowed_leagues = {'WC': 'FIFA World Cup',
                             'CL': 'UEFA Champions League',
@@ -30,6 +26,20 @@ acronyms_allowed_leagues = {'WC': 'FIFA World Cup',
 
 names_allowed_leagues = {acronyms_allowed_leagues[i]: i
                          for i in acronyms_allowed_leagues}
+
+
+def translator_pt_br(string):
+    translate = {
+        'all': 'todos',
+        'particular': 'particular',
+        'standings': 'classificacao',
+        'matches': 'confrontos',
+        'teams': 'equipes',
+        'scorers': 'artilharia',
+        'head2head': 'time Vs time'
+    }
+
+    return translate[string]
 
 
 def show_my_allowed_competitions():
@@ -71,4 +81,3 @@ def show_all_items_from_collections_source(item_to_show='all'):
             for j in i:
                 print(f'{j}: {type(i[j])} \n'
                       f'-> {i[j]}\n')
-

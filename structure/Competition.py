@@ -63,24 +63,25 @@ class Competition:
                 self.standings = {i['position']: i['team']['name']
                                   for i in option_dict[page_search][0]['table']}
 
-
     def activate_matches(self):
         page_search = 'matches'
         option_dict = self._access_internal_option(page_search)
 
-        matchday_dict = dict()
+        matchdays = set()
         for i in option_dict[page_search]:
-            for j in i:
-                if j == 'matchday':
-                    matchday_dict[f"{i[j]}a Rodada"] = None
+            matchdays.add(i['matchday'])
+
+        matches = dict()
+        for i in matchdays:
+            key = f"{i}a Rodada"
+            matches[key] = list()
 
         for i in option_dict[page_search]:
-            for j in matchday_dict:
-                if j == f"{i['matchday']}a Rodada":
-                    match = {i['id']: Match(i)}
-                    matchday_dict[j] = match
+            for z in matches:
+                if f"{i['matchday']}a Rodada" == z:
+                    matches[z].append(Match(i))
 
-        self.matches = matchday_dict
+        self.matches = matches
 
     def activate_scorers(self):
         page_search = 'scorers'
