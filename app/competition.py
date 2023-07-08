@@ -2,7 +2,7 @@ from tkinter import ANCHOR, END
 
 from access.info_api import names_allowed_leagues, translator_pt_br
 from app.AppMain import AppMain
-from app.match import select_competiton_matchday
+from app.match import select_matchday
 from app.person import select_person
 from app.team import select_team
 from structure.Competition import Competition
@@ -77,7 +77,7 @@ def select_competition_option(self: AppMain):
 
     elif selected == 'confrontos':
         self.clear_all()
-        self.setting_button_to(lambda: select_competiton_matchday(self))
+        self.setting_button_to(lambda: select_matchday(self))
 
         self.entry_title.insert(END, f"{self.competition.name}: (Rodadas)")
 

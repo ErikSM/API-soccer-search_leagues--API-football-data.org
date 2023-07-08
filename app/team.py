@@ -92,7 +92,6 @@ def select_team_option(self: AppMain):
 
                 self.list_options.insert(END, f"{all_matches[i][j].resume}")
 
-
     elif selected == 'sobre o clube':
         self.clear_only('text')
 

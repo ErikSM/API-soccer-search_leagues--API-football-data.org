@@ -3,7 +3,7 @@ from tkinter import ANCHOR, END
 from app.AppMain import AppMain
 
 
-def select_competiton_matchday(self: AppMain):
+def select_matchday(self: AppMain):
     matchday_selected = self.list_options.get(ANCHOR)
     self.setting_button_to(lambda: show_match_details(self, 'competition', matches_dict))
 
