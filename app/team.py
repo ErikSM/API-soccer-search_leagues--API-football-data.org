@@ -1,6 +1,8 @@
 from tkinter import ANCHOR, END
 
 from app.AppMain import AppMain
+from app.match import show_match_details
+from app.person import select_person
 from structure.Team import Team
 
 
@@ -55,7 +57,7 @@ def select_team_option(self: AppMain):
 
     if selected == 'jogadores':
         self.clear_all()
-        self.setting_button_to(None)
+        self.setting_button_to(lambda: select_person(self, from_to='team'))
 
         self.entry_title.insert(END, f"{self.team.name}: (Jogadores)")
 
@@ -64,38 +66,37 @@ def select_team_option(self: AppMain):
             self.list_options.insert(1, i)
 
     elif selected == 'competicoes':
-        self.clear_all()
-        self.setting_button_to(None)
+        self.clear_only('text')
 
-        self.entry_title.insert(END, f"{self.team.name}: (Competicoes)")
-
-        all_competitions = self.team.competiitions
-        for i in all_competitions:
-            self.list_options.insert(END, i)
+        competition_details = self.team.competiitions
+        for i in competition_details:
+            string = '-{} ({})'.format(i, competition_details[i]['type'])
+            self.text_place.insert(END, f'\n{string}\n')
 
     elif selected == 'confrontos':
         self.clear_all()
-        self.setting_button_to(None)
+        self.setting_button_to(lambda: show_match_details(self, 'team', matches_dict))
 
         self.entry_title.insert(END, f"{self.team.name}: (Confrontos)")
 
         self.team.activate_matches()
+
+        matches_dict = dict()
         all_matches = self.team.matches
         for i in all_matches:
             for j in all_matches[i]:
+                key = all_matches[i][j].resume
+                info = all_matches[i][j]
+
+                matches_dict[key] = info
+
                 self.list_options.insert(END, f"{all_matches[i][j].resume}")
 
-    elif selected == 'sobre o clube':
-        self.clear_all()
-        self.setting_button_to(None)
 
-        self.entry_title.insert(END, f"{self.team.name}: (Sobre o clube)")
+    elif selected == 'sobre o clube':
+        self.clear_only('text')
 
         all_about = self.team.about
         for i in all_about:
-            self.list_options.insert(END, f"{i}:   {all_about[i]}")
-
-        basic_info = self.team.basic_information()
-        for i in basic_info:
-            string = '{}: {}'.format(i, basic_info[i])
+            string = '{}: {}'.format(i.title(), all_about[i])
             self.text_place.insert(END, f'\n{string}\n')

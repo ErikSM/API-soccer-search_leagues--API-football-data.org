@@ -58,8 +58,7 @@ class Match:
             'rodada': self.__matchday,
             'placar': self.resume,
             'anfitriao': self.__details['homeTeam']['name'],
-            'visitante': self.__details['homeTeam']['name'],
-
+            'visitante': self.__details['awayTeam']['name'],
         }
 
         return basic_info

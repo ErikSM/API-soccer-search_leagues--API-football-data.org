@@ -57,7 +57,7 @@ class Person:
         basic_info = dict()
         basic_info['nome'] = self.__name
         basic_info['posicao'] = self.__position
-        basic_info['idade'] = (int(self.__birthday[:4]) - int(datetime.today().year))
+        basic_info['idade'] = (int(datetime.today().year) - int(self.__birthday[:4]))
         basic_info['nacionalidade'] = self.__details['nationality']
 
         return basic_info

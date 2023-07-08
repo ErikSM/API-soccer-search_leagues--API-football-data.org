@@ -2,6 +2,8 @@ from tkinter import ANCHOR, END
 
 from access.info_api import names_allowed_leagues, translator_pt_br
 from app.AppMain import AppMain
+from app.match import select_competiton_matchday
+from app.person import select_person
 from app.team import select_team
 from structure.Competition import Competition
 from structure.Team import Team
@@ -89,7 +91,7 @@ def select_competition_option(self: AppMain):
 
     elif selected == 'artilharia':
         self.clear_all()
-        self.setting_button_to(lambda: select_competition_scorer(self, all_scorers))
+        self.setting_button_to(lambda: select_person(self, from_to='scorers'))
 
         self.entry_title.insert(END, f"{self.competition.name}: (Artilharia)")
         self.competition.activate_scorers()
@@ -105,56 +107,6 @@ def select_competition_option(self: AppMain):
         self.text_place.delete(1.0, END)
 
     basic_info = self.competition.basic_information()
-    for i in basic_info:
-        string = '{}: {}'.format(i, basic_info[i])
-        self.text_place.insert(END, f'\n{string}\n')
-
-
-def select_competition_scorer(self: AppMain, scorers_dict: dict):
-    scorer_selected = self.list_options.get(ANCHOR)
-
-    index_one = scorer_selected.index('-')
-    index_two = scorer_selected.index(':')
-    scorer_name = scorer_selected[index_one + 1: index_two]
-
-    self.clear_only('text')
-
-    scorer_info = scorers_dict[scorer_name]
-    for i in scorer_info:
-        if i == 'team' or i == 'player':
-            info = scorer_info[i]['name']
-        else:
-            info = scorer_info[i]
-        string = '{}: {}'.format(i, info)
-        self.text_place.insert(END, f'\n{string}\n')
-
-
-def select_competiton_matchday(self: AppMain):
-    matchday_selected = self.list_options.get(ANCHOR)
-    self.setting_button_to(lambda: show_match_details(self, matches_dict))
-
-    self.clear_all()
-
-    self.entry_title.insert(END, f"{self.competition.name}: ({matchday_selected})")
-
-    matches_dict = dict()
-    all_matches = self.competition.matches[matchday_selected]
-    for i in all_matches:
-        matches_dict[i.resume] = i
-        self.list_options.insert(END, i.resume)
-
-
-def show_match_details(self: AppMain, matches_dict: dict):
-    match_selected = self.list_options.get(ANCHOR)
-
-    self.clear_only('text')
-    self.clear_only('entry')
-    self.entry_title.insert(END, f"{self.competition.name}: ({match_selected})")
-
-    match = matches_dict[match_selected]
-    self.match = match
-
-    basic_info = self.match.basic_information()
     for i in basic_info:
         string = '{}: {}'.format(i, basic_info[i])
         self.text_place.insert(END, f'\n{string}\n')

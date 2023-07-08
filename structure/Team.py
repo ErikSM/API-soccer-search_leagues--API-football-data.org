@@ -68,6 +68,7 @@ class Team:
                     matchday_dict[j] = match
 
         self.matches = matchday_dict
+        print(matchday_dict)
 
     def _access_internal_option(self, page_search):
         access = ApiAccess(Team.options, page_search, self.__code_id)

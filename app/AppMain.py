@@ -59,22 +59,6 @@ class AppMain:
 
         self.setting_return_button_to()
 
-    def select_person(self, from_to=None):
-        selected_person = self.list_options.get(ANCHOR)
-
-        if from_to == 'scorers':
-            code_index = selected_person.index('-')
-            person_code = selected_person[:code_index]
-
-            person = self.competition.teams[person_code]
-            self.person = person
-        else:
-            person = self.competition.teams[selected_person]
-            self.person = person
-
-        self.clear_all()
-        self.entry_title.insert(END, self.person.name)
-
     def clear_all(self):
         self.entry_title.delete(0, END)
         self.list_options.delete(0, END)
